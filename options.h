@@ -31,6 +31,9 @@
 #define RSA_PRIV_FILENAME DROPBEAR_HOME "/dropbear_rsa_host_key"
 #endif
 
+/* Allow cmdline options compatibility with various android forks */
+#define DROPBEAR_PARAMETER_COMPAT
+
 /* Set NON_INETD_MODE if you require daemon functionality (ie Dropbear listens
  * on chosen ports and keeps accepting connections. This is the default.
  *
