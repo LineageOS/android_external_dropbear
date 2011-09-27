@@ -430,6 +430,11 @@ pty_setowner(struct passwd *pw, const char *tty_name)
 					"chown(%.100s, %u, %u) failed: %.100s",
 						tty_name, (unsigned int)pw->pw_uid, (unsigned int)gid,
 						strerror(errno));
+#ifdef ANDROID_CHANGES
+			} else if (st.st_uid > 10000) {
+				/* allow (non-root) dropbear launch from apk, login as app uid */
+				dropbear_log(LOG_INFO, "Using application uid %u...", st.st_uid);
+#endif
 			} else {
 				dropbear_exit("chown(%.100s, %u, %u) failed: %.100s",
 				    tty_name, (unsigned int)pw->pw_uid, (unsigned int)gid,
