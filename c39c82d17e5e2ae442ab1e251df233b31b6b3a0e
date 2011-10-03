@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAJX///4M\u003d",
+        "filename": "cli-kex.c",
+        "patchSetId": 1
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 1039
+      },
+      "writtenOn": "2011-10-03T22:57:17Z",
+      "side": 1,
+      "message": "m_strdup is only required if there is a m_free later...",
+      "revId": "c39c82d17e5e2ae442ab1e251df233b31b6b3a0e",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71",
+      "unresolved": false
+    }
+  ]
+}
