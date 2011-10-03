@@ -157,7 +157,15 @@ static FILE* open_known_hosts_file(int * readonly)
 	if (!homedir) {
 		struct passwd * pw = NULL;
 		pw = getpwuid(getuid());
-		if (pw) {
+		if (pw
+#ifndef ANDROID_CHANGES
+                       && (strlen (pw->pw_dir) <= 1)) {
+			TRACE(("(hosts_file) forcing DROPBEAR_HOME folder for user .ssh: " DROPBEAR_HOME ))
+			homedir = m_strdup(DROPBEAR_HOME);
+		}
+		else if (pw
+#endif
+                           ) {
 			homedir = pw->pw_dir;
 		}
 	}
