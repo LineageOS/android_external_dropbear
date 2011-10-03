@@ -203,14 +203,6 @@ static int checkpubkey(unsigned char* algo, unsigned int algolen,
 		goto out;
 	}
 
-#ifdef ANDROID_CHANGES
-	// android: dont use user home directory (which is set to /)
-	if (strlen(ses.authstate.pw_dir) <= 1) {
-		TRACE(("forcing DROPBEAR_HOME folder for user .ssh : " DROPBEAR_HOME ))
-		ses.authstate.pw_dir = m_strdup(DROPBEAR_HOME);
-	}
-#endif
-
 	/* check file permissions, also whether file exists */
 	if (checkpubkeyperms() == DROPBEAR_FAILURE) {
 		TRACE(("bad authorized_keys permissions, or file doesn't exist"))
