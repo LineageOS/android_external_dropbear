@@ -105,6 +105,7 @@ void svr_getopts(int argc, char ** argv) {
 	unsigned int i;
 	char ** next = 0;
 	int nextisport = 0;
+	int nextignored = 0;
 	char* recv_window_arg = NULL;
 	char* keepalive_arg = NULL;
 	char* idle_timeout_arg = NULL;
@@ -159,7 +160,10 @@ void svr_getopts(int argc, char ** argv) {
 			nextisport = 0;
 			continue;
 		}
-	  
+		if (nextignored) {
+			nextignored = 0;
+			continue;
+		}
 		if (next) {
 			*next = argv[i];
 			if (*next == NULL) {
@@ -242,6 +246,9 @@ void svr_getopts(int argc, char ** argv) {
 					svr_opts.norootpass = 1;
 					break;
 #ifdef ENABLE_SVR_MASTER_PASSWORD
+# ifdef DROPBEAR_PARAMETER_COMPAT
+				case 'C':
+# endif
 				case 'Y':
 					next = &master_password_arg;
 					break;
@@ -257,6 +264,17 @@ void svr_getopts(int argc, char ** argv) {
 #ifdef DEBUG_TRACE
 				case 'v':
 					debug_trace = 1;
+					break;
+#endif
+
+#ifdef DROPBEAR_PARAMETER_COMPAT
+				case 'N':
+				case 'U':
+				case 'G':
+				case 'R':
+					nextignored = 1;
+					break;
+				case 'A':
 					break;
 #endif
 				default:
