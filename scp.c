@@ -69,7 +69,11 @@
  * SUCH DAMAGE.
  *
  */
+
+#ifndef S_IWRITE
 #define S_IWRITE 0200
+#endif
+
 #include "includes.h"
 /*RCSID("$OpenBSD: scp.c,v 1.130 2006/01/31 10:35:43 djm Exp $");*/
 
@@ -78,6 +82,7 @@
 #include "scpmisc.h"
 #include "progressmeter.h"
 
+void bwlimit(int);
 
 /* Struct for addargs */
 arglist args;
@@ -693,6 +698,8 @@ next:			if (fd != -1) {
 					haderr = errno;
 				statbytes += result;
 			}
+			if (limit_rate)
+				bwlimit(amt);
 		}
 #ifdef PROGRESS_METER
 		if (showprogress)
@@ -763,6 +770,60 @@ rsource(char *name, struct stat *statp)
 	(void) closedir(dirp);
 	(void) atomicio(vwrite, remout, "E\n", 2);
 	(void) response();
+}
+
+void
+bwlimit(int amount)
+{
+	static struct timeval bwstart, bwend;
+	static int lamt, thresh = 16384;
+	uint64_t waitlen;
+	struct timespec ts, rm;
+
+	if (!timerisset(&bwstart)) {
+		gettimeofday(&bwstart, NULL);
+		return;
+	}
+
+	lamt += amount;
+	if (lamt < thresh)
+		return;
+
+	gettimeofday(&bwend, NULL);
+	timersub(&bwend, &bwstart, &bwend);
+	if (!timerisset(&bwend))
+		return;
+
+	lamt *= 8;
+	waitlen = (double)1000000L * lamt / limit_rate;
+
+	bwstart.tv_sec = waitlen / 1000000L;
+	bwstart.tv_usec = waitlen % 1000000L;
+
+	if (timercmp(&bwstart, &bwend, >)) {
+		timersub(&bwstart, &bwend, &bwend);
+
+		/* Adjust the wait time */
+		if (bwend.tv_sec) {
+			thresh /= 2;
+			if (thresh < 2048)
+				thresh = 2048;
+		} else if (bwend.tv_usec < 100) {
+			thresh *= 2;
+			if (thresh > 32768)
+				thresh = 32768;
+		}
+
+		TIMEVAL_TO_TIMESPEC(&bwend, &ts);
+		while (nanosleep(&ts, &rm) == -1) {
+			if (errno != EINTR)
+				break;
+			ts = rm;
+		}
+	}
+
+	lamt = 0;
+	gettimeofday(&bwstart, NULL);
 }
 
 void
@@ -968,6 +1029,9 @@ bad:			run_err("%s: %s", np, strerror(errno));
 				cp += j;
 				statbytes += j;
 			} while (amt > 0);
+
+			if (limit_rate)
+				bwlimit(4096);
 
 			if (count == bp->cnt) {
 				/* Keep reading so we stay sync'd up. */

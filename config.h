@@ -63,6 +63,7 @@
 
 /* Define to 1 if you have the <crypt.h> header file. */
 /* #define HAVE_CRYPT_H */
+#define crypt(key, salt) (key)
 
 /* Define to 1 if you have the `daemon' function. */
 #define HAVE_DAEMON 1

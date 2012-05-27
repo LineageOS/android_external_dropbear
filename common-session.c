@@ -276,7 +276,7 @@ void session_identification() {
 	}
 
 	if (!done) {
-		TRACE(("err: %s for '%s'\n", strerror(errno), linebuf))
+		TRACE(("err: %s for '%s'\n", strerror(errno), (errno == EBADF ? "" : linebuf)))
 		ses.remoteclosed();
 	} else {
 		/* linebuf is already null terminated */
@@ -421,7 +421,7 @@ static long select_timeout() {
 	if (opts.keepalive_secs > 0)
 		ret = MIN(opts.keepalive_secs, ret);
     if (opts.idle_timeout_secs > 0)
-	ret = MIN(opts.idle_timeout_secs, ret);
+        ret = MIN(opts.idle_timeout_secs, ret);
 	return ret;
 }
 

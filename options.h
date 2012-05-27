@@ -164,10 +164,11 @@ much traffic. */
 /* Authentication Types - at least one required.
    RFC Draft requires pubkey auth, and recommends password */
 
-/* Note: PAM auth is quite simple, and only works for PAM modules which just do
+/* Note: PAM auth is quite simple and only works for PAM modules which just do
  * a simple "Login: " "Password: " (you can edit the strings in svr-authpam.c).
- * It's useful for systems like OS X where standard password crypts don't work,
- * but there's an interface via a PAM module - don't bother using it otherwise.
+ * It's useful for systems like OS X where standard password crypts don't work
+ * but there's an interface via a PAM module. It won't work for more complex
+ * PAM challenge/response.
  * You can't enable both PASSWORD and PAM. */
 
 #define ENABLE_SVR_MASTER_PASSWORD
@@ -181,6 +182,12 @@ much traffic. */
 #ifdef ENABLE_SVR_PUBKEY_AUTH
 #define ENABLE_SVR_PUBKEY_OPTIONS
 #endif
+
+/* Define this to allow logging in to accounts that have no password specified.
+ * Public key logins are allowed for blank-password accounts regardless of this
+ * setting.  PAM is not affected by this setting, it uses the normal pam.d
+ * settings ('nullok' option) */
+#define ALLOW_BLANK_PASSWORD 1
 
 #define ENABLE_CLI_PASSWORD_AUTH
 #define ENABLE_CLI_PUBKEY_AUTH
@@ -237,7 +244,7 @@ much traffic. */
 /* The default file to store the daemon's process ID, for shutdown
    scripts etc. This can be overridden with the -P flag */
 #ifndef DROPBEAR_PIDFILE
-#define DROPBEAR_PIDFILE "/data/dropbear/dropbear.pid"
+#define DROPBEAR_PIDFILE DROPBEAR_HOME "/dropbear.pid"
 #endif
 
 /* The command to invoke for xauth when using X11 forwarding.
@@ -293,8 +300,6 @@ be overridden at runtime with -I. 0 disables idle timeouts */
 
 /* The default path. This will often get replaced by the shell */
 #define DEFAULT_PATH "/usr/bin:/usr/sbin:/bin:/sbin:/system/sbin:/system/bin:/system/xbin:/system/xbin/bb:/data/local/bin"
-
-#define ALLOW_BLANK_PASSWORDS 1
 
 /* Some other defines (that mostly should be left alone) are defined
  * in sysoptions.h */
